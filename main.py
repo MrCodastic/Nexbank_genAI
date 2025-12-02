@@ -14,7 +14,7 @@ def print_header():
     print("=====================================================")
     print("      🏦  NEXUS BANK GEN-AI SUITE (v1.0)  🏦      ")
     print("=====================================================")
-    print("Powered by: TinyLlama (Local) | Vector DB: Chroma")
+    print("Powered by: Phi3 (Local) | Vector DB: Chroma")
     print("=====================================================\n")
 
 def main_menu():

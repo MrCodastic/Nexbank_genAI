@@ -49,3 +49,78 @@ Note: Since the document's expiry date is before today's date (2025-12-02), no r
 --- ⚖️ VALIDATION REPORT ---
 ⏱️  Processing Time: 136.67 seconds (Benchmark: <30s)
 ❌ CRITICAL FAIL: Model did not output valid JSON.
+
+
+--- 🕵️ STARTING ROBUST KYC EXTRACTION 🕵️ ---
+
+📄 INPUT: Received raw OCR text (108 chars)...
+
+--- ✅ VALIDATED OUTPUT ---
+{
+  "full_name": "SARAH J. CONNOR",
+  "dob_iso": "1984-05-12",
+  "id_number": "881209X",
+  "expiry_date_iso": "2024-08-14",
+  "document_type": "PASSPORT",
+  "risk_flags": [
+    "DOCUMENT_EXPIRED (Expired on 2024-08-14)",
+    "POTENTIAL_OCR_ERROR_IN_ID"
+  ]
+}
+
+--- ⚖️ REPORT CARD ---
+⏱️ Time: 103.01s
+🚩 RISKS DETECTED: ['DOCUMENT_EXPIRED (Expired on 2024-08-14)', 'POTENTIAL_OCR_ERROR_IN_ID']
+
+
+import chromadb
+from chromadb.utils import embedding_functions
+
+# --- 1. SETUP THE DATABASE ---
+# We use a local persistent storage (a folder named 'bank_memory')
+client = chromadb.PersistentClient(path="./bank_memory")
+
+# Use a free, high-quality embedding model (MiniLM)
+# This turns text into a list of numbers (vectors)
+embed_fn = embedding_functions.SentenceTransformerEmbeddingFunction(model_name="all-MiniLM-L6-v2")
+
+# Create (or get) the collection
+collection = client.get_or_create_collection(name="policy_docs", embedding_function=embed_fn)
+
+# --- 2. THE DATA (Simulated Policy Document) ---
+# In a real app, you would read this from a PDF.
+documents = [
+    "POLICY-101: Unsecured Personal Loans. Max limit is $50,000. Min credit score 680. Interest rate 12%.",
+    "POLICY-102: Small Business Loans. Requires 2 years of tax returns. Max limit $500,000. Excludes crypto businesses.",
+    "POLICY-103: KYC Updates 2025. All passports must be valid for at least 6 months beyond application date.",
+    "POLICY-104: Remote Work Security. Employees must use VPN 'NexusSecure'. Personal devices are strictly prohibited."
+]
+
+ids = ["doc1", "doc2", "doc3", "doc4"]
+metadatas = [{"source": "Lending_Manual"}, {"source": "Lending_Manual"}, {"source": "Compliance_Guide"}, {"source": "HR_Handbook"}]
+
+# --- 3. STORE IT ---
+print("--- 📚 INGESTING DOCUMENTS INTO VECTOR DB ---")
+collection.upsert(documents=documents, ids=ids, metadatas=metadatas)
+print(f"✅ Successfully stored {len(documents)} policy chunks in 'bank_memory'.")
+
+
+--- 🏛️ STARTING REGPULSE (RAG ENGINE) 🏛️ ---
+
+❓ QUESTION: What is the maximum limit for a personal loan?
+📖 FOUND EVIDENCE (from Lending_Manual): 'POLICY-101: Unsecured Personal Loans. Max limit is $50,000. Min credit score 680. Interest rate 12%.'
+🤖 AI ANSWER: The maximum limit for an unsecured personal loan under Policy-101 is $50,000.
+✅ CITATION: Verified against Lending_Manual
+----------------------------------------
+
+❓ QUESTION: Can a crypto startup get a business loan?
+📖 FOUND EVIDENCE (from Lending_Manual): 'POLICY-102: Small Business Loans. Requires 2 years of tax returns. Max limit $500,000. Excludes crypto businesses.'
+🤖 AI ANSWER: I cannot find a specific policy for granting small business loans to cryptocurrency startups. According to Policy-102 regarding Small Business Loans, the requirement includes submitting two years of tax returns and there is no mention about excluding crypto businesses from eligibility criteria. However, as my information doesn't explicitly state that policy allows or disallows loans for such enterprises, I would recommend directly contacting lending institutions to get precise guidance based on their internal policies beyond just Policy-102.
+✅ CITATION: Verified against Lending_Manual
+----------------------------------------
+
+❓ QUESTION: Can I use my personal iPad for work?
+📖 FOUND EVIDENCE (from HR_Handbook): 'POLICY-104: Remote Work Security. Employees must use VPN 'NexusSecure'. Personal devices are strictly prohibited.'
+🤖 AI ANSWER: I cannot find a policy for that within Policy-104: Remote Work Security. According to this rule, employees must use VPN 'NexusSecure' and are strictly prohibited from using their own devices as it is implied they might not comply with the security standards set by NexusSecure.
+✅ CITATION: Verified against HR_Handbook
+----------------------------------------

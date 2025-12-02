@@ -6,7 +6,7 @@ class BankingLLM:
     def __init__(self, provider="ollama"):
         self.provider = provider
         
-        # --- CONFIGURATION: AZURE (Only used if provider='azure') ---
+        # --- CONFIGURATION: UPDATE THESE IF USING AZURE ---
         self.azure_client = None
         if provider == "azure":
             self.azure_client = AzureOpenAI(
@@ -18,7 +18,7 @@ class BankingLLM:
 
     def generate_response(self, system_prompt, user_input):
         """
-        Universal wrapper to switch between Local Phi-3 and Azure GPT-4
+        Universal wrapper to switch between Local Llama 3 and Azure GPT-4
         """
         messages = [
             {"role": "system", "content": system_prompt},
@@ -26,18 +26,20 @@ class BankingLLM:
         ]
 
         if self.provider == "ollama":
-            # --- UPDATED HERE: Set to 'phi3' as requested ---
-            try:
-                response = ollama.chat(model='phi3', messages=messages)
-                return response['message']['content']
-            except ollama.ResponseError as e:
-                # This helps debug if Phi3 isn't installed or crashes
-                return f"Error: The model 'phi3' could not be reached. Details: {str(e)}"
+            # Uses your local machine (Must have 'ollama run llama3' running)
+            response = ollama.chat(model='llama3', messages=messages)
+            return response['message']['content']
             
         elif self.provider == "azure":
+            # Uses Cloud Enterprise model
             response = self.azure_client.chat.completions.create(
                 model=self.deployment_name,
                 messages=messages,
                 temperature=0.7
             )
             return response.choices[0].message.content
+
+# Test it immediately
+if __name__ == "__main__":
+    ai = BankingLLM(provider="ollama") # Change to 'azure' to test cloud
+    print("Test Response:", ai.generate_response("You are a bot.", "Say hello."))

@@ -1,0 +1,51 @@
+# Core AI libraries
+pip install openai ollama langchain chromadb
+
+# Utilities
+pip install pandas python-dotenv
+
+python setup_database.py
+
+python run_smart_collect.py
+
+curl -fsSL https://ollama.com/install.sh | sh
+
+
+
+
+--- 💬 STARTING LIVE CHAT ---
+
+👤 USER: Stop calling me! I don't have the money right now.
+
+🤖 AI (ollama): John, I understand it can be stressful to think about paying off a large amount. Let's work together to find a solution. Would you like to discuss setting up a payment plan that fits your current situation?
+
+👤 USER: I actually lost my job last week, I can't pay anything.
+
+🤖 AI (ollama): So sorry to hear that, John. Job loss can be really tough. Let's prioritize getting you back on track. Would you like to consider our "Hardship Pause" option? It can give us some flexibility and help you get settled before we revisit your payment plan. What do you think?
+
+
+--- ⚖️ METRICS VALIDATION ---
+✅ Compliance Status: PASSED
+📊 Empathy Score: 2/2 turns
+
+--- 🕵️ STARTING KYC-X EXTRACTION MODULE 🕵️ ---
+
+📄 INPUT: Received raw OCR text (174 chars)...
+
+--- 🤖 AI OUTPUT (Raw) ---
+Here is the extracted data in valid JSON format:
+
+{
+"full_name": "SARAH J. CONNOR",
+"date_of_birth": "12-05-1994",
+"document_type": "Passport",
+"id_number": "P4SSPORT# 881209X",
+"expiry_date": "14-08-2024",
+"risk_flags": []
+}
+
+Note: Since the document's expiry date is before today's date (2025-12-02), no risk flags are added.
+
+--- ⚖️ VALIDATION REPORT ---
+⏱️  Processing Time: 136.67 seconds (Benchmark: <30s)
+❌ CRITICAL FAIL: Model did not output valid JSON.
